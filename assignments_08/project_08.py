@@ -1,13 +1,9 @@
-# project_08.py
-# Run this in Azure Cloud Shell after completing the Cost Analysis above.
 
-# Fill in the hourly rates from your two Pricing Calculator estimates.
-rate_a = 0.010375    # Standard_B1s hourly rate (Scenario A)
-rate_b = 3.060       # Standard_NC6s_v3 hourly rate (Scenario B, VM only)
+rate_a = 0.010375    
+rate_b = 3.060       
 
-hours_a = 160   # Scenario A: 8h/day, 5 days/week, ~4 weeks
-hours_b = 730   # Scenario B: always on
-
+hours_a = 160   
+hours_b = 730   
 cost_a = rate_a * hours_a
 cost_b = rate_b * hours_b
 
