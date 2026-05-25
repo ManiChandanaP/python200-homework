@@ -7,3 +7,5 @@ For Scenario B, I estimated a much heavier analytics workload using a Standard_N
 One interesting thing I noticed while exploring the Azure Pricing Calculator was how dramatically costs increase when using GPUs, larger databases, or always-on infrastructure. Small changes in VM size or runtime hours can significantly affect the monthly cost. It made me realize how important budgeting and cost planning are in cloud environments.
 
 The Python script successfully calculated the VM costs using the hourly rates from the Pricing Calculator. The calculated monthly totals closely matched the estimates shown in Azure.
+
+video link - https://youtu.be/ZhvaL4EerNI 
