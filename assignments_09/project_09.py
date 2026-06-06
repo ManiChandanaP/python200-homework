@@ -87,3 +87,6 @@ output_file = OUTPUTS_DIR / "weather_raw.json"
 output_file.write_bytes(downloaded)
 print(f"\n Saved raw JSON locally to: {output_file}")
 print("Pipeline complete!")
+
+#Video Link
+# https://youtu.be/-9npU3HaXx4
