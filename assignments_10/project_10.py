@@ -1,4 +1,15 @@
 
+# Classifying weather conditions for running is not an ideal use of an LLM
+# because the inputs are just two clean numbers — temperature and precipitation
+# — and the output is one of three fixed labels. A simple rule-based approach
+# like "temp between 10–25°C and precip < 1mm → good" would be faster, cheaper,
+# and perfectly consistent across every run with no risk of unexpected output.
+# The main thing you gain with an LLM is implicit domain knowledge — it can
+# weigh edge cases like 9°C with wind differently without explicit rules — but
+# for this narrow, well-defined task that flexibility doesn't justify the cost
+# or the need for an "unknown" fallback. A rule-based approach would be the
+# right engineering choice here.
+
 
 import json
 import os
@@ -57,19 +68,14 @@ def read_weather_records() -> list[dict]:
         return records
 
     except Exception:
-        print("Blob not found. Fetching fallback from Open-Meteo API...")
-        url = (
-            "https://api.open-meteo.com/v1/forecast"
-            "?latitude=37.7749&longitude=-122.4194"
-            "&hourly=temperature_2m,precipitation"
-            "&temperature_unit=celsius"
-            "&forecast_days=3"
+        print(" Blob not found. Loading fallback from local file.")
+        fallback_path = os.path.join(
+            os.path.dirname(__file__), "..", "assignments_10", "resources", "weather_raw.json"
         )
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        data = response.json()
+        with open(fallback_path, "r") as f:
+            data = json.load(f)
         records = reshape_hourly(data)
-        print(f"Loaded {len(records)} records from Open-Meteo API.")
+        print(f" Loaded {len(records)} records from fallback file.")
         return records
 
 
