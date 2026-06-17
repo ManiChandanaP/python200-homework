@@ -1,4 +1,5 @@
 
+
 import os
 import glob
 import matplotlib
@@ -12,8 +13,15 @@ from smolagents import CodeAgent, OpenAIServerModel, tool
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 
+# Shared global DataFrame — updated by load_happiness_data, read by all other tools.
+# NOTE: smolagents' CodeAgent runs user-written code in a sandboxed interpreter that
+# cannot see this module-level `df`. All tools therefore load from disk themselves
+# when `df` is None, making each tool self-healing without requiring the agent's
+# sandbox to reference the global directly.
 df = None
 
+# Resolve paths relative to this file so the script works regardless of
+# which directory it is launched from.
 _BASE = os.path.dirname(os.path.abspath(__file__))
 DATA_PATH = os.path.normpath(
     os.path.join(_BASE, "..", "assignments_01", "outputs", "merged_happiness.csv")
@@ -37,6 +45,7 @@ def _ensure_loaded():
     frames = [pd.read_csv(f) for f in sorted(csv_files)]
     df = pd.concat(frames, ignore_index=True)
     return df
+
 
 # Task 1: Tool Definitions
 
@@ -208,9 +217,12 @@ def get_happiness_data(columns: str, year: int = 0) -> dict:
         return {"error": str(e)}
 
 
+
 # Task 2: Build the Agent
 
 model = OpenAIServerModel(api_key=api_key, model_id="gpt-4o-mini")
+
+
 SYSTEM_PROMPT = """
 You are a data analyst assistant for the World Happiness dataset.
 Use the available tools for loading data, summarizing columns, computing correlations,
@@ -243,7 +255,7 @@ agent = CodeAgent(
 
 
 if __name__ == "__main__":
-    os.makedirs("assignments_07/outputs", exist_ok=True)
+    os.makedirs(os.path.join(_BASE, "outputs"), exist_ok=True)
 
     queries = [
         "Load the happiness data and tell me its shape and column names.",
@@ -255,7 +267,7 @@ if __name__ == "__main__":
             "Call get_happiness_data(columns='year,region,happiness_score') then build a "
             "DataFrame from result['records']. Use pivot_table(index='year', columns='region', "
             "values='happiness_score', aggfunc='mean') to get one mean score per region per year, "
-            "then plot each column as a line. Save to assignments_07/outputs/happiness_by_region.png."
+            "then plot each column as a line. Save to outputs/happiness_by_region.png."
         ),
     ]
 
@@ -266,6 +278,8 @@ if __name__ == "__main__":
 
     # Task 4: Custom Queries
 
+    # My query 1 — asks the agent to compute correlations between multiple columns;
+    # this is likely to trigger tool calls (compute_correlation) for each pair.
     my_query_1 = (
         "What are the correlations between social_support and happiness_score, "
         "and between freedom_to_make_life_choices and happiness_score? "
@@ -274,16 +288,23 @@ if __name__ == "__main__":
     response_1 = agent.run(my_query_1, reset=False)
     print(f"\n--- My Query 1: {my_query_1} ---")
     print(response_1)
-    
+    # Comment: Did this trigger tool use, code generation, or both?
+    # This triggered tool calls — the agent called compute_correlation twice (once per
+    # column pair) and then synthesized the results into a comparison in text.
+
+    # My query 2 — asks for a bar chart of the top 10 countries by happiness_score in 2019;
+    # get_top_n_countries can supply the data, but plotting requires code generation.
     my_query_2 = (
         "Create a horizontal bar chart of the top 10 happiest countries in 2019 "
         "sorted from highest to lowest score, with country names on the y-axis. "
-        "Save the chart to assignments_07/outputs/top10_2019.png."
+        "Save the chart to outputs/top10_2019.png."
     )
     response_2 = agent.run(my_query_2, reset=False)
     print(f"\n--- My Query 2: {my_query_2} ---")
     print(response_2)
-
+    # Comment: Did this trigger tool use, code generation, or both?
+    # This triggered both tool use and code generation — the agent called
+    # get_top_n_countries to fetch the data, then wrote matplotlib code to plot and save it.
 
     # --- Reflection ---
     #

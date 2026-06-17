@@ -19,7 +19,7 @@ from smolagents import (
 client = OpenAI()
 
 
-CSV_PATH = r"C:\Users\puvva\Downloads\python200\python200-homework\assignments_07\bike_commute.csv"
+CSV_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bike_commute.csv")
 
 def celsius_to_fahrenheit(celsius: float) -> str:
     """Convert a Celsius temperature to Fahrenheit and return it as a formatted string."""
