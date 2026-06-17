@@ -247,7 +247,7 @@ agent = CodeAgent(
     additional_authorized_imports=[
         "pandas", "matplotlib", "matplotlib.pyplot", "scipy", "scipy.stats"
     ],
-    max_steps=6,
+    max_steps=8,
 )
 
 
